@@ -19,4 +19,8 @@
 
 # alpain 
 # git issue
+<<<<<<< HEAD
 # git issue
+# git issue
+=======
+>>>>>>> parent of 0e25ecb (update)
