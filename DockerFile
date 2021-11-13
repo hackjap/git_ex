@@ -1,8 +1,5 @@
-FROM ubuntu:18.04
+FROM golang:1.14.1-alpine3.11
 
-RUN mkdir -p /app/userapp
+COPY ./index.txt ./
 
-# COPY index.txt /var/lib
-
-
-
+RUN go build -o ./go-app 

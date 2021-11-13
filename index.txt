@@ -19,8 +19,5 @@
 
 # alpain 
 # git issue
-<<<<<<< HEAD
 # git issue
-# git issue
-=======
->>>>>>> parent of 0e25ecb (update)
+# 찰나가 영원이 될때 . 
