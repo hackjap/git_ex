@@ -1,0 +1,8 @@
+FROM ubuntu:18.04
+
+RUN mkdir -p /app/userapp
+
+# COPY index.txt /var/lib
+
+
+
