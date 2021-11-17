@@ -1,0 +1,87 @@
+pipeline {
+
+    agent any
+
+    stages {
+        
+        stage("deployment") {
+
+            steps {
+
+                script{
+
+                    sh """echo '''---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pipelineapi
+  namespace: cicd
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: pipelineapi-app
+      version: blue
+  template:
+    metadata:
+      name: pipelineapi-pod
+      labels:
+        app: pipelineapi-app
+        version: blue
+    spec:
+      containers:
+        - name: pipelineapi-container
+          image: harbor.okestro.cld/okestro/pipelineapi
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 18081
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: deploy
+
+            - name: SPRING_CLOUD_VAULT_HOST
+              value: vault.dreamcloud.co.kr
+
+            - name: SPRING_CLOUD_VAULT_TOKEN
+              value: s.IEoYUCC0bGnQiJeSrfiIsXdQ
+
+            - name: SPRING_CLOUD_VAULT_KV_APPLICATION-NAME
+              value: prd/portal/devops_k8s
+
+      imagePullSecrets:
+        - name: harborcred''' > deploy.yaml"""
+
+                        sh "cat deploy.yaml"
+
+                        kubernetesDeploy(configs: "deploy.yaml", kubeconfigId: "spjang")
+
+                        def cloud = [:]
+                        cloud.name = "master"
+                        cloud.host = "172.168.50.100"
+                        cloud.port = 22
+                        cloud.user = "ubuntu"
+                        cloud.password = "cloud1234"
+                        cloud.allowAnyHosts = true
+
+                        try {
+
+                            sshCommand remote: cloud, command: """sudo kubectl rollout restart deploy pipelineapi -n cicd"""
+
+                        } catch(e) {
+
+                            currentBuild.result = "SUCCESS"
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    post {
+
+        always {
+
+            cleanWs()
+        }
+    }
+}

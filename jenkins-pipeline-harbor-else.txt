@@ -1,0 +1,57 @@
+pipeline{
+    
+    agent any	
+    
+    stages{
+        stage("cloudService-deploy"){
+            tools {
+
+                gradle "gradle-3.5.1"
+                jdk "openjdk-8-openj9"
+                maven "apache-maven-3.3.9"
+                nodejs "NodeJS-12.22.1"
+	            ß
+            }
+            steps{
+                sh """
+                    java -version || true
+                    javac -version || true
+                    mvn -version || true
+                    gradle -v || true
+                    node -v || true
+                    npm -v || true
+                    docker -v || true
+                """
+                
+                sh "git clone -b develop --single-branch http://ChoiJB:D5m2hqGzvrgmn9Akt7fa@bitbucket.org/okestrolab/rondo.git sources_pipeline-k8s" // var/lib/jenkins/workspace 
+                dir("sources_pipeline-k8s"){
+                    sh "pwd && ls -al"
+                    dir("CloudServiceBroker"){
+                        sh "mvn -e -U clean --update-snapshots dependency:copy-dependencies package -Dmaven.test.skip=true"
+                        sh """
+                        echo "FROM openjdk:8-jdk-alpine
+WORKDIR CloudServiceBroker
+COPY ./CloudServiceBroker/target ./
+EXPOSE 18081
+ENTRYPOINT [\\"/usr/bin/java\\", \\"-jar\\", \\"/CloudServiceBroker/CloudServiceBroker-0.0.1-SNAPSHOT.jar\\"]" > ./Dockerfile
+                        cat ./Dockerfile
+                    """          
+                        sh """
+                        docker build -t pipelinebroker:latest .
+                        docker images
+                        docker save pipelinebroker:latest > /home/jenkins/storage/pipeline-broker_latest.tar.gz
+                        docker rmi pipelinebroker:latest
+                        """
+                    }
+                }
+            }
+        }
+    }
+    
+    post{
+        always{
+            cleanWs()
+        }
+    }
+    
+}
