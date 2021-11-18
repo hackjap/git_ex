@@ -14,24 +14,24 @@ pipeline {
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: pipelineapi
-  namespace: cicd
+  name: user-api
+  namespace: portal
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: pipelineapi-app
+      app: userapi-app
       version: blue
   template:
     metadata:
-      name: pipelineapi-pod
+      name: userapi-pod
       labels:
-        app: pipelineapi-app
+        app: userapi-app
         version: blue
     spec:
       containers:
-        - name: pipelineapi-container
-          image: harbor.okestro.cld/okestro/pipelineapi
+        - name: userapi-container
+          image: harbor.okestro.cld/okestro/user-api
           imagePullPolicy: Always
           ports:
             - containerPort: 18081
@@ -53,19 +53,19 @@ spec:
 
                         sh "cat deploy.yaml"
 
-                        kubernetesDeploy(configs: "deploy.yaml", kubeconfigId: "spjang")
+                        kubernetesDeploy(configs: "deploy.yaml", kubeconfigId: "spjang-k8s")
 
                         def cloud = [:]
                         cloud.name = "master"
-                        cloud.host = "172.168.50.100"
+                        cloud.host = "192.168.65.33"
                         cloud.port = 22
                         cloud.user = "ubuntu"
-                        cloud.password = "cloud1234"
+                        cloud.password = "okestro2018!"
                         cloud.allowAnyHosts = true
 
                         try {
 
-                            sshCommand remote: cloud, command: """sudo kubectl rollout restart deploy pipelineapi -n cicd"""
+                            sshCommand remote: cloud, command: """sudo kubectl rollout restart deploy user-api -n portal"""
 
                         } catch(e) {
 

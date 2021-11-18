@@ -73,16 +73,99 @@ spec:
             }
         }
         
-        stage('Deployment') {
-            steps {
-                sh 'ls -al'
-                sh 'pwd'
-                kubernetesDeploy(
-                    configs: "UserApi/deployment-user-api.yaml", 
-                    kubeconfigId: "kubeconfig", 
-                )
-            }
-        }
+           stages {
+        
+        stage("deployment") {
 
+            steps {
+
+                script{
+
+                    sh """echo '''---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: user-api
+  namespace: portal
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: userapi-app
+      version: blue
+  template:
+    metadata:
+      name: userapi-pod
+      labels:
+        app: userapi-app
+        version: blue
+    spec:
+      containers:
+        - name: userapi-container
+          image: harbor.okestro.cld/okestro/user-api
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 18081
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: deploy
+
+            - name: SPRING_CLOUD_VAULT_HOST
+              value: 100.0.0.189
+
+            - name: SPRING_CLOUD_VAULT_TOKEN
+              value: s.0D8xFysWozVxuownT0RZlRdH
+
+            - name: SPRING_CLOUD_VAULT_KV_APPLICATION-NAME
+              value: prd/portal/user
+
+      imagePullSecrets:
+        - name: harborcred''' > deploy.yaml"""
+
+                        sh "cat deploy.yaml"
+
+                        kubernetesDeploy(configs: "deploy.yaml", kubeconfigId: "spjang-k8s")
+
+                        def cloud = [:]
+                        cloud.name = "master"
+                        cloud.host = "192.168.65.33"
+                        cloud.port = 22
+                        cloud.user = "ubuntu"
+                        cloud.password = "okestro2018!"
+                        cloud.allowAnyHosts = true
+
+                        try {
+
+                            sshCommand remote: cloud, command: """sudo kubectl rollout restart deploy user-api -n portal"""
+
+                        } catch(e) {
+
+                            currentBuild.result = "SUCCESS"
+                        }
+                    }
+                }
+            }
+           }
+
+
+        # stage('Deployment') {
+        #     steps {
+        #         sh 'ls -al'
+        #         sh 'pwd'
+        #         kubernetesDeploy(
+        #             configs: "UserApi/deployment-user-api.yaml", 
+        #             kubeconfigId: "spjang-k8s", 
+        #         )
+        #     }
+        # }
+
+    }
+
+      post {
+
+        always {
+
+            cleanWs()
+        }
     }
 }
