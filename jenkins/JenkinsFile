@@ -1,0 +1,119 @@
+pipeline {
+    agent {
+        kubernetes {
+            yaml """
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    some-label: pod
+spec:
+  containers:
+  - name: maven-jdk-node
+    image: harbor.okestro.cld/okestro/docker-jdk-8-maven-node
+    command:
+    - cat
+    tty: true
+  - name: docker
+    image: harbor.okestro.cld/okestro/docker  
+    volumeMounts:
+    - name: dockersock
+      mountPath: "/var/run/docker.sock"
+    command:
+    - cat
+    tty: true
+  volumes:
+  - name: dockersock
+    hostPath:
+      path: /var/run/docker.sock
+  - name: hosts
+    hostPath:
+      path: /etc/hosts
+"""
+        }
+    }
+
+    stages {
+
+        stage("deployment") {
+
+            steps {
+
+                script{
+
+                    sh """echo '''---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: admin-app
+  namespace: dev-cmp
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: admin-app-pods-label
+  template:
+    metadata:
+      name: admin-app-pod
+      labels:
+        app: admin-app-pods-label
+    spec:
+      volumes:
+       - name: config-volume
+         configMap:
+           name: nginx-config
+      containers:
+      - name: admin-app-container
+        volumeMounts:
+              - name: config-volume
+                mountPath: /usr/share/nginx/html/config.js
+                subPath: config.js
+
+        image: harbor.okestro.cld/develop/admin-app:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 80
+        resources:
+          limits:
+            memory: "1000Mi"
+            cpu: "1000m"
+          requests:
+            memory: "1000Mi"
+            cpu: "1000m"
+      imagePullSecrets:
+        - name: harborcred''' > deploy.yaml"""
+                      
+                        sh "cat deploy.yaml"
+                        sh "pwd"
+
+                        kubernetesDeploy(configs: "deploy.yaml", kubeconfigId: "spjang-k8s")
+
+                        def cloud = [:]
+                        cloud.name = "master"
+                        cloud.host = "192.168.65.33"
+                        cloud.port = 22
+                        cloud.user = "ubuntu"
+                        cloud.password = "okestro2018"
+                        cloud.allowAnyHosts = true
+
+                        try {
+
+                            sshCommand remote: cloud, command: """sudo kubectl rollout restart deploy admin-app -n dev-cmp"""
+
+                        } catch(e) {
+
+                            currentBuild.result = "SUCCESS"
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    post {
+
+        always {
+
+            cleanWs()
+        }
+    }

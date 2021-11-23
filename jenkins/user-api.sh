@@ -142,7 +142,7 @@ spec:
 
                             currentBuild.result = "SUCCESS"
                         }
-                    }
+                    }//script
                 }
             }
            }

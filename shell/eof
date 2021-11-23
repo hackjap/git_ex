@@ -1,0 +1,16 @@
+$ cat file
+asdf
+$ cat <<EOF > config.js
+    const config = ( () => {
+        return {
+            "VUE_CONFIG_APP_API": "...",
+
+         // env.dev
+            "VUE_APP_ADMIN_API_URL":"https://admin.api.cmp.dev.okestro.cld/admin/api",
+            "VUE_APP_ADMIN_APP_URL":"https://admin.cmp.dev.okestro.cld/admin/app",
+            "VUE_APP_ADMIN_MAIN_URL":"https://admin.cmp.dev.okestro.cld/admin/app",
+            "VUE_APP_USER_API_URL":"https://user.api.cmp.dev.okestro.cld/user/api",
+            "VUE_APP_USER_APP_URL":"https://www.cmp.dev.okestro.cld/user/app",
+        };
+    } )();
+EOF
