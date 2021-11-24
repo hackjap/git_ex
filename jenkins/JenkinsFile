@@ -52,7 +52,7 @@ spec:
   selector:
     matchLabels:
       app: admin-app-pods-label
-  template:
+  template: 
     metadata:
       name: admin-app-pod
       labels:

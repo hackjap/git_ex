@@ -46,6 +46,9 @@ spec:
         
         stage('Deployment') {
             steps {
+
+
+                
                 sh 'ls -al'
                 sh 'pwd'
                 kubernetesDeploy(
