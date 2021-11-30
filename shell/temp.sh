@@ -1,33 +1,18 @@
-#!/bin/sh
+appPath=( DashboardApp UserApi UserApp )
+appName=( dashboard-app  user-api user-app )
 
-arr=(AdminApi AdminApp DashboardApi DashboardApp UserApi UserApp OpenStackApi OpenStackApp  )
+echo --- (docker build)amd64 기반의 도커 이미지를 생성합니다... ---
 
-
-version=dev
-
-echo ---mvn build---
-
-for i in $arr
+for i in {0..2}
 do
-	mvn -P $version -f ./$i/pom.xml clean package
+ docker pull harbor.okestro.cld/dream-markone/${appName[$i]}:1130 
 done
 
-echo ---mk img---
 
-app="adminapp adminapi userapp userapi openstackapp openstackapi dashboardapp dashboardapi service-catalog-engine cloud-service-broker"\
-repo="harbor.dreamcloud.co.kr/okestro
-
-
-#docker build --tag $repo/adminapi:latest AdminApi/
-#docker build --tag $repo/adminapp:latest AdminApp/
-#docker build --tag $repo/cloud-service-broker:latest CloudServiceBroker/
-#docker build --tag $repo/dashboard-api:latest DashboardApi/
-#docker build --tag $repo/dashboard-app:latest DashboardApp/
-#docker build --tag $repo/gateapi:latest GateApi/
-#docker build --tag $repo/gateapp:latest GateApp/
-#docker build --tag $repo/openstackapi:latest OpenStackApi/
-#docker build --tag $repo/openstackapp:latest OpenStackApp/
-#docker build --tag $repo/service-catalog-engine:latest ServiceCatalogEngine/
-#docker build --tag $repo/userapi:latest UserApi/
-docker build --tag  $repo/userapp:latest UserApp/
-
+echo --- docker save...  이미지를 tar파일로 저장합니다... ---
+mkdir amd64_images && cd amd64_images
+for i in {0..8}
+do
+ echo ${appName[$i]} 생성중 ...
+ docker save -o ${appName[$i]}.tar ${appName}:amd64
+done
