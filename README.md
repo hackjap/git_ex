@@ -4,6 +4,7 @@ build trigger
 webhook-test
 git exercise
 plugin ++ 
+log4j core 
 - 2021년 11월 15일 월요일 23시 57분 19초 KST
 - 2021년 11월 16일 화요일 17시 42분 18초 KST
 - 2021년 11월 17일 수요일 23시 28분 24초 KST
