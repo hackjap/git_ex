@@ -3,9 +3,7 @@
 build trigger 
 webhook-test
 git exercise
-plugin ++ 
-nodeselector
-log4j core 
+whereis whatis which
 ssh
 - 2021년 11월 15일 월요일 23시 57분 19초 KST
 - 2021년 11월 16일 화요일 17시 42분 18초 KST
