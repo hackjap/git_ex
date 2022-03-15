@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 study git
 
 suudy git 22
 git log -p -2 `
+=======
+study git
+>>>>>>> 6633e7b3a0d3c7eabee50ec160e7e73eb44ef5b8
